@@ -1,5 +1,7 @@
 import "dotenv/config";
+import fs from "fs";
 import { program, Argument } from "commander";
+import path from "path";
 
 import { getCloudSpeechToTextResult } from "./cloud_speech_to_text";
 import { getAmivoiceResult } from "./amivoice";
@@ -12,21 +14,30 @@ const [apiType, filePath] = program
   .parse(process.argv).args;
 
 (async () => {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+
+  const outputDir = `output/${path.basename(filePath)}`;
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir);
+  }
+
   switch (apiType) {
     case "gcp":
-      await getCloudSpeechToTextResult(filePath);
+      await getCloudSpeechToTextResult({ filePath, outputDir });
       break;
 
     case "aws":
-      await getAmazonTranscribeResult(filePath);
+      await getAmazonTranscribeResult({ filePath, outputDir });
       break;
 
     case "azure":
-      await getCognitiveServicesSpeechResult(filePath);
+      await getCognitiveServicesSpeechResult({ filePath, outputDir });
       break;
 
     case "amivoice":
-      await getAmivoiceResult(filePath);
+      await getAmivoiceResult({ filePath, outputDir });
       break;
 
     default:

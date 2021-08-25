@@ -6,5 +6,6 @@ node_modules
 .credentials/*
 
 test_data/*
+output/*
 
 !.gitkeep

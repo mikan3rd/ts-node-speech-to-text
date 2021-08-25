@@ -1,4 +1,3 @@
-import util from "util";
 import fs from "fs";
 import path from "path";
 import {
@@ -12,14 +11,19 @@ import axios from "axios";
 
 const { AWS_REGION, AWS_BUCKET_NAME } = process.env;
 
-export const getAmazonTranscribeResult = async (filePath: string) => {
+export const getAmazonTranscribeResult = async (args: { filePath: string; outputDir: string }) => {
+  const { filePath, outputDir } = args;
   if (!AWS_REGION) {
     throw new Error("AWS_REGION is not set");
   }
   const { bucketName, fileName } = await uploadFile(filePath);
   const jobName = await createTranscribeJob({ bucketName, fileName });
   if (jobName) {
-    await getTranscribeJob(jobName);
+    const result = await getTranscribeJob(jobName);
+    fs.writeFileSync(`${outputDir}/amazon_transcribe.json`, JSON.stringify(result, null, 2));
+
+    const text = result.results.transcripts.map((t: { transcript: string }) => t.transcript).join("\n");
+    console.log(`\n[Amazon Transcribe]\n${text}`);
   }
 };
 
@@ -70,7 +74,6 @@ const getTranscribeJob = async (jobName: string) => {
   while (true) {
     data = await transcribeClient.send(new GetTranscriptionJobCommand(params));
     const status = data.TranscriptionJob?.TranscriptionJobStatus;
-    console.log(status);
     if (status === "COMPLETED" || status === "FAILED") {
       break;
     }
@@ -82,7 +85,7 @@ const getTranscribeJob = async (jobName: string) => {
     url: data.TranscriptionJob?.Transcript?.TranscriptFileUri,
     responseType: "json",
   });
-  console.log(util.inspect(response.data, { depth: null }));
+  return response.data;
 };
 
 const sleep = (msec: number) => new Promise((resolve) => setTimeout(resolve, msec));

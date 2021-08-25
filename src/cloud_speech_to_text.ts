@@ -1,21 +1,31 @@
 import { SpeechClient } from "@google-cloud/speech";
 import { Storage } from "@google-cloud/storage";
 import fs from "fs";
-import util from "util";
 
 const { GOOGLE_BUCKET_NAME } = process.env;
 
-export const getCloudSpeechToTextResult = async (filePath: string) => {
+export const getCloudSpeechToTextResult = async (args: { filePath: string; outputDir: string }) => {
+  const { filePath, outputDir } = args;
   const stats = fs.statSync(filePath);
   const fileSizeInBytes = stats.size;
   const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let response: any;
   if (fileSizeInMegabytes < 10) {
-    await getSpeechResult({ filePath });
+    response = await getSpeechResult({ filePath });
   } else {
     console.log("File size is over 10MB!!");
     const gcsUri = await uploadFile(filePath);
-    await getSpeechResult({ gcsUri });
+    response = await getSpeechResult({ gcsUri });
   }
+
+  fs.writeFileSync(`${outputDir}/cloud_speech_to_text.json`, JSON.stringify(response, null, 2));
+  const text = response.results
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((result: { alternatives: any[] }) => result.alternatives.map((alternative) => alternative.transcript))
+    .join("\n");
+  console.log(`\n[Cloud Speech to Text]\n${text}`);
 };
 
 const getSpeechResult = async (args: { filePath?: string; gcsUri?: string }) => {
@@ -34,9 +44,8 @@ const getSpeechResult = async (args: { filePath?: string; gcsUri?: string }) => 
     },
   };
   const [operation] = await client.longRunningRecognize(request);
-  const response = await operation.promise();
-
-  console.log(util.inspect(response, { depth: null }));
+  const [response] = await operation.promise();
+  return response;
 };
 
 const uploadFile = async (filePath: string) => {
