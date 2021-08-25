@@ -21,6 +21,11 @@ export const getCloudSpeechToTextResult = async (args: { filePath: string; outpu
   }
 
   fs.writeFileSync(`${outputDir}/cloud_speech_to_text.json`, JSON.stringify(response, null, 2));
+  const text = response.results
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((result: { alternatives: any[] }) => result.alternatives.map((alternative) => alternative.transcript))
+    .join("\n");
+  console.log(`\n[Cloud Speech to Text]\n${text}`);
 };
 
 const getSpeechResult = async (args: { filePath?: string; gcsUri?: string }) => {

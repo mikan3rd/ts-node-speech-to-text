@@ -45,6 +45,9 @@ export const getCognitiveServicesSpeechResult = (args: { filePath: string; outpu
     recognizer.close();
     const results = events.map((event) => JSON.parse(event.result.json));
     fs.writeFileSync(`${outputDir}/cognitiveservices_speech.json`, JSON.stringify(results, null, 2));
+
+    const text = results.map((result) => result.DisplayText).join("\n");
+    console.log(`\n[Cognitive Service Speech]\n${text}`);
   };
 
   recognizer.startContinuousRecognitionAsync();

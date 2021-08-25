@@ -21,6 +21,9 @@ export const getAmazonTranscribeResult = async (args: { filePath: string; output
   if (jobName) {
     const result = await getTranscribeJob(jobName);
     fs.writeFileSync(`${outputDir}/amazon_transcribe.json`, JSON.stringify(result, null, 2));
+
+    const text = result.results.transcripts.map((t: { transcript: string }) => t.transcript).join("\n");
+    console.log(`\n[Amazon Transcribe]\n${text}`);
   }
 };
 
@@ -71,7 +74,6 @@ const getTranscribeJob = async (jobName: string) => {
   while (true) {
     data = await transcribeClient.send(new GetTranscriptionJobCommand(params));
     const status = data.TranscriptionJob?.TranscriptionJobStatus;
-    console.log(status);
     if (status === "COMPLETED" || status === "FAILED") {
       break;
     }
