@@ -49,6 +49,10 @@ If the file is larger than 10MB, it needs to be uploaded to Cloud Storage, so th
 GOOGLE_BUCKET_NAME="XXXXX"
 ```
 
+## Amazon Transcribe (Amazon Web Services)
+
+Official Page: https://aws.amazon.com/transcribe/
+
 ## AmiVoice
 
 Official Demo Page: https://acp.amivoice.com/main/acp-demo/

@@ -13,13 +13,7 @@ export const getCloudSpeechToTextResult = async (filePath: string) => {
     await getSpeechResult({ filePath });
   } else {
     console.log("File size is over 10MB!!");
-    if (!GOOGLE_BUCKET_NAME) {
-      throw new Error("GOOGLE_BUCKET_NAME is not defined");
-    }
-    const storage = new Storage();
-    const [file] = await storage.bucket(GOOGLE_BUCKET_NAME).upload(filePath);
-    const gcsUri = `gs://${GOOGLE_BUCKET_NAME}/${file.name}`;
-    console.log(`gcsUri: ${gcsUri}`);
+    const gcsUri = await uploadFile(filePath);
     await getSpeechResult({ gcsUri });
   }
 };
@@ -43,4 +37,15 @@ const getSpeechResult = async (args: { filePath?: string; gcsUri?: string }) => 
   const response = await operation.promise();
 
   console.log(util.inspect(response, { depth: null }));
+};
+
+const uploadFile = async (filePath: string) => {
+  if (!GOOGLE_BUCKET_NAME) {
+    throw new Error("GOOGLE_BUCKET_NAME is not defined");
+  }
+  const storage = new Storage();
+  const [file] = await storage.bucket(GOOGLE_BUCKET_NAME).upload(filePath);
+  const gcsUri = `gs://${GOOGLE_BUCKET_NAME}/${file.name}`;
+  console.log(`gcsUri: ${gcsUri}`);
+  return gcsUri;
 };
