@@ -3,13 +3,13 @@
 - You can easily run APIs for various services that convert speech to text.
 - You can also check out the sample TypeScript code that actually works.
 
-# How To Use
+# How to Use
 
 1. To use each API, you need to create an `.env` file and write the credential information in it. See the `.env.example` file.
 
 2. Place the audio files in the `test_data` directory.
 
-## Cloud Speech-to-Text
+## Cloud Speech-to-Text (Google Cloud Platform)
 
 Official Demo Page: https://cloud.google.com/speech-to-text
 
@@ -24,7 +24,7 @@ GOOGLE_APPLICATION_CREDENTIALS=".credentials/XXXXX.json"
 3. Run the following command.
 
 ```bash
-yarn ts-node src/cloud_speech_to_text.ts
+yarn start gcp test_data/test.wav
 ```
 
 ## AmiVoice
@@ -40,5 +40,5 @@ AMIVOICE_APPKEY="XXXXX"
 2. Run the following command.
 
 ```bash
-yarn ts-node src/amivoice.ts
+yarn start amivoice test_data/test.wav
 ```
