@@ -6,8 +6,19 @@
 # How to Use
 
 1. To use each API, you need to create an `.env` file and write the credential information in it. See the `.env.example` file.
-
 2. Place the audio files in the `test_data` directory.
+3. Run the following command.
+
+```bash
+# for help
+yarn start -h
+
+# command format
+yarn start <apiType> <filePath>
+
+# for example
+yarn start gcp test_data/test.wav
+```
 
 ## Cloud Speech-to-Text (Google Cloud Platform)
 
