@@ -16,7 +16,6 @@ export const getAmivoiceResult = async (filePath: string) => {
   const params = { d: "-a-general", u: AMIVOICE_APPKEY };
   const headers = { "content-type": "multipart/form-data" };
   const response = await axios.request({ method: "POST", url, data, headers, params });
-  console.log(response.status);
   console.log(util.inspect(response.data, { depth: null }));
   return response.data;
 };

@@ -68,6 +68,23 @@ AWS_BUCKET_NAME="XXXXX"
 yarn start aws test_data/test.wav
 ```
 
+## Speech to Text (Microsoft Azure)
+
+Official Demo Page: https://azure.microsoft.com/ja-jp/services/cognitive-services/speech-to-text
+
+1. Write the subscription key in `.env`.
+
+```.env
+AZURE_SUBSCRIPTION_KEY="XXXXX"
+AZURE_LOCATION="japaneast"
+```
+
+2. Run the following command.
+
+```bash
+yarn start azure test_data/test.wav
+```
+
 ## AmiVoice
 
 Official Demo Page: https://acp.amivoice.com/main/acp-demo/

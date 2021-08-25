@@ -74,7 +74,7 @@ const getTranscribeJob = async (jobName: string) => {
     if (status === "COMPLETED" || status === "FAILED") {
       break;
     }
-    await sleep(1000 * 3);
+    await sleep(1000 * 5);
   }
 
   const response = await axios.request({
