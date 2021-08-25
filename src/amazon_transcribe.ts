@@ -1,8 +1,14 @@
 import util from "util";
 import fs from "fs";
 import path from "path";
-import { TranscribeClient, StartTranscriptionJobCommand } from "@aws-sdk/client-transcribe";
+import {
+  TranscribeClient,
+  StartTranscriptionJobCommand,
+  GetTranscriptionJobCommand,
+  GetTranscriptionJobCommandOutput,
+} from "@aws-sdk/client-transcribe";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import axios from "axios";
 
 const { AWS_REGION, AWS_BUCKET_NAME } = process.env;
 
@@ -11,24 +17,10 @@ export const getAmazonTranscribeResult = async (filePath: string) => {
     throw new Error("AWS_REGION is not set");
   }
   const { bucketName, fileName } = await uploadFile(filePath);
-  await getSpeechResult({ bucketName, fileName });
-};
-
-const getSpeechResult = async (args: { bucketName: string; fileName: string }) => {
-  const { bucketName, fileName } = args;
-  const transcribeClient = new TranscribeClient({ region: AWS_REGION });
-
-  const mediaFileUri = `s3://${bucketName}/${fileName}`;
-  console.log(`mediaFileUri: ${mediaFileUri}`);
-
-  const params = {
-    TranscriptionJobName: `${bucketName}__${fileName}`,
-    LanguageCode: "ja-JP",
-    Media: { MediaFileUri: mediaFileUri },
-  };
-
-  const data = await transcribeClient.send(new StartTranscriptionJobCommand(params));
-  console.log(util.inspect(data, { depth: null }));
+  const jobName = await createTranscribeJob({ bucketName, fileName });
+  if (jobName) {
+    await getTranscribeJob(jobName);
+  }
 };
 
 const uploadFile = async (filePath: string) => {
@@ -46,3 +38,51 @@ const uploadFile = async (filePath: string) => {
 
   return { bucketName: uploadParams.Bucket, fileName: uploadParams.Key };
 };
+
+const createTranscribeJob = async (args: { bucketName: string; fileName: string }) => {
+  const { bucketName, fileName } = args;
+  const transcribeClient = new TranscribeClient({ region: AWS_REGION });
+
+  const mediaFileUri = `s3://${bucketName}/${fileName}`;
+  console.log(`mediaFileUri: ${mediaFileUri}`);
+
+  const params = {
+    TranscriptionJobName: `${bucketName}__${fileName}__${Date.now()}`,
+    LanguageCode: "ja-JP",
+    Media: { MediaFileUri: mediaFileUri },
+  };
+
+  const data = await transcribeClient.send(new StartTranscriptionJobCommand(params));
+  const jobName = data.TranscriptionJob?.TranscriptionJobName;
+  console.log(`jobName: ${jobName}`);
+  return jobName;
+};
+
+const getTranscribeJob = async (jobName: string) => {
+  const transcribeClient = new TranscribeClient({ region: AWS_REGION });
+  const params = {
+    TranscriptionJobName: jobName,
+  };
+
+  let data: GetTranscriptionJobCommandOutput;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    data = await transcribeClient.send(new GetTranscriptionJobCommand(params));
+    const status = data.TranscriptionJob?.TranscriptionJobStatus;
+    console.log(status);
+    if (status === "COMPLETED" || status === "FAILED") {
+      break;
+    }
+    await sleep(1000 * 3);
+  }
+
+  const response = await axios.request({
+    method: "GET",
+    url: data.TranscriptionJob?.Transcript?.TranscriptFileUri,
+    responseType: "json",
+  });
+  console.log(util.inspect(response.data, { depth: null }));
+};
+
+const sleep = (msec: number) => new Promise((resolve) => setTimeout(resolve, msec));
