@@ -9,7 +9,7 @@ import { getAmazonTranscribeResult } from "./amazon_transcribe";
 import { getCognitiveServicesSpeechResult } from "./cognitiveservices_speech";
 
 const [apiType, filePath] = program
-  .addArgument(new Argument("<apiType>", "API type").choices(["gcp", "aws", "azure", "amivoice"]))
+  .addArgument(new Argument("<apiType>", "API type").choices(["all", "gcp", "aws", "azure", "amivoice"]))
   .addArgument(new Argument("<filePath>", "audio file path"))
   .parse(process.argv).args;
 
@@ -24,6 +24,15 @@ const [apiType, filePath] = program
   }
 
   switch (apiType) {
+    case "all":
+      await Promise.all([
+        getCloudSpeechToTextResult({ filePath, outputDir }),
+        getAmazonTranscribeResult({ filePath, outputDir }),
+        getCognitiveServicesSpeechResult({ filePath, outputDir }),
+        getAmivoiceResult({ filePath, outputDir }),
+      ]);
+      break;
+
     case "gcp":
       await getCloudSpeechToTextResult({ filePath, outputDir });
       break;
