@@ -1,4 +1,4 @@
-import speech from "@google-cloud/speech";
+import { SpeechClient } from "@google-cloud/speech";
 import { Storage } from "@google-cloud/storage";
 import fs from "fs";
 import util from "util";
@@ -21,7 +21,7 @@ export const getCloudSpeechToTextResult = async (filePath: string) => {
 const getSpeechResult = async (args: { filePath?: string; gcsUri?: string }) => {
   const { filePath, gcsUri } = args;
 
-  const client = new speech.SpeechClient();
+  const client = new SpeechClient();
   const request = {
     audio: {
       content: filePath && fs.readFileSync(filePath).toString("base64"),
