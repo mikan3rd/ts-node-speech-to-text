@@ -23,6 +23,8 @@ yarn start <apiType> <filePath>
 yarn start gcp test_data/test.wav
 ```
 
+4. The transcription result will be displayed in the console. You can also see the details in the JSON saved in the `output` directory.
+
 ## Cloud Speech-to-Text (Google Cloud Platform)
 
 Official Demo Page: https://cloud.google.com/speech-to-text
