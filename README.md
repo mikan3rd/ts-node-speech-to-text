@@ -53,7 +53,7 @@ GOOGLE_BUCKET_NAME="XXXXX"
 
 Official Page: https://aws.amazon.com/transcribe/
 
-1. Write credential infomation, etc in `.env`.
+1. Write credential information and other in `.env`.
 
 ```.env
 AWS_ACCESS_KEY_ID="XXXXX"
