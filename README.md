@@ -41,6 +41,14 @@ GOOGLE_APPLICATION_CREDENTIALS=".credentials/XXXXX.json"
 yarn start gcp test_data/test.wav
 ```
 
+#### Note
+
+If the file is larger than 10MB, it needs to be uploaded to Cloud Storage, so the following environment variables are also required
+
+```.env
+GOOGLE_BUCKET_NAME="XXXXX"
+```
+
 ## AmiVoice
 
 Official Demo Page: https://acp.amivoice.com/main/acp-demo/
