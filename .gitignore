@@ -1,5 +1,10 @@
 node_modules
+
 *.log
-test_data/*
-!.gitkeep
+
 .env
+.credentials/*
+
+test_data/*
+
+!.gitkeep
