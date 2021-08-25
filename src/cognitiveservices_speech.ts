@@ -11,7 +11,8 @@ import util from "util";
 
 const { AZURE_SUBSCRIPTION_KEY, AZURE_LOCATION } = process.env;
 
-export const getCognitiveServicesSpeechResult = (filePath: string) => {
+export const getCognitiveServicesSpeechResult = (args: { filePath: string; outputDir: string }) => {
+  const { filePath, outputDir } = args;
   if (!AZURE_SUBSCRIPTION_KEY) {
     throw new Error("AZURE_SUBSCRIPTION_KEY is not set");
   }
@@ -26,11 +27,10 @@ export const getCognitiveServicesSpeechResult = (filePath: string) => {
   const audioConfig = AudioConfig.fromWavFileInput(fs.readFileSync(filePath));
   const recognizer = new SpeechRecognizer(speechConfig, audioConfig);
 
-  const results: SpeechRecognitionEventArgs[] = [];
+  const events: SpeechRecognitionEventArgs[] = [];
   recognizer.recognized = (s, e) => {
     if (e.result.reason == ResultReason.RecognizedSpeech) {
-      results.push(e);
-      console.log(util.inspect(e, { depth: null }));
+      events.push(e);
     }
   };
 
@@ -43,6 +43,8 @@ export const getCognitiveServicesSpeechResult = (filePath: string) => {
 
   recognizer.sessionStopped = (s, e) => {
     recognizer.close();
+    const results = events.map((event) => JSON.parse(event.result.json));
+    fs.writeFileSync(`${outputDir}/cognitiveservices_speech.json`, JSON.stringify(results, null, 2));
   };
 
   recognizer.startContinuousRecognitionAsync();
