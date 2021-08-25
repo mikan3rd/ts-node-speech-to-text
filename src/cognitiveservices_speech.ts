@@ -1,4 +1,11 @@
-import { SpeechConfig, AudioConfig, SpeechRecognizer } from "microsoft-cognitiveservices-speech-sdk";
+import {
+  SpeechConfig,
+  AudioConfig,
+  SpeechRecognizer,
+  ResultReason,
+  CancellationReason,
+  SpeechRecognitionEventArgs,
+} from "microsoft-cognitiveservices-speech-sdk";
 import fs from "fs";
 import util from "util";
 
@@ -19,8 +26,24 @@ export const getCognitiveServicesSpeechResult = (filePath: string) => {
   const audioConfig = AudioConfig.fromWavFileInput(fs.readFileSync(filePath));
   const recognizer = new SpeechRecognizer(speechConfig, audioConfig);
 
-  recognizer.recognizeOnceAsync((result) => {
-    console.log(util.inspect(result, { depth: null }));
+  const results: SpeechRecognitionEventArgs[] = [];
+  recognizer.recognized = (s, e) => {
+    if (e.result.reason == ResultReason.RecognizedSpeech) {
+      results.push(e);
+      console.log(util.inspect(e, { depth: null }));
+    }
+  };
+
+  recognizer.canceled = (s, e) => {
+    if (e.reason == CancellationReason.Error) {
+      console.log(util.inspect(e, { depth: null }));
+    }
+    recognizer.stopContinuousRecognitionAsync();
+  };
+
+  recognizer.sessionStopped = (s, e) => {
     recognizer.close();
-  });
+  };
+
+  recognizer.startContinuousRecognitionAsync();
 };
