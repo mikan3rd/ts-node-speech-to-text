@@ -10,7 +10,10 @@
 3. Run the following command.
 
 ```bash
-# for help
+# install dependencies
+yarn install
+
+# display help
 yarn start -h
 
 # command format
