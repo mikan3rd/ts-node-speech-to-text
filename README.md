@@ -43,10 +43,29 @@ yarn start gcp test_data/test.wav
 
 #### Note
 
-If the file is larger than 10MB, it needs to be uploaded to Cloud Storage, so the following environment variables are also required
+If the file is larger than 10MB, it needs to be uploaded to Cloud Storage, so the following environment variables are also required.
 
 ```.env
 GOOGLE_BUCKET_NAME="XXXXX"
+```
+
+## Amazon Transcribe (Amazon Web Services)
+
+Official Page: https://aws.amazon.com/transcribe/
+
+1. Write credential information and other in `.env`.
+
+```.env
+AWS_ACCESS_KEY_ID="XXXXX"
+AWS_SECRET_ACCESS_KEY="XXXXX"
+AWS_REGION="ap-northeast-1"
+AWS_BUCKET_NAME="XXXXX"
+```
+
+2. Run the following command.
+
+```bash
+yarn start aws test_data/test.wav
 ```
 
 ## AmiVoice
