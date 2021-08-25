@@ -1,4 +1,3 @@
-import "dotenv/config";
 import axios from "axios";
 import fs from "fs";
 import FormData from "form-data";
@@ -18,5 +17,3 @@ export const getAmivoiceResult = async (imageFilePath: string) => {
   console.log(util.inspect(response.data, { depth: null }));
   return response.data;
 };
-
-await getAmivoiceResult("test_data/test.wav");

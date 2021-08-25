@@ -1,9 +1,8 @@
-import "dotenv/config";
 import speech from "@google-cloud/speech";
 import fs from "fs";
 import util from "util";
 
-export const getCloudSpeechToText = async (filename: string) => {
+export const getCloudSpeechToTextResult = async (filename: string) => {
   const client = new speech.SpeechClient();
 
   const request = {
@@ -23,5 +22,3 @@ export const getCloudSpeechToText = async (filename: string) => {
 
   console.log(util.inspect(response, { depth: null }));
 };
-
-await getCloudSpeechToText("test_data/test.wav");
