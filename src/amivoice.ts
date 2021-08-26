@@ -38,12 +38,10 @@ export const getAmivoiceResult = async (args: { filePath: string; outputDir: str
 
       const { name } = path.parse(filePath);
       const divideDir = `test_data/${name}`;
-      if (!fs.existsSync(divideDir)) {
-        fs.mkdirSync(divideDir);
-      } else {
+      if (fs.existsSync(divideDir)) {
         fs.rmdirSync(divideDir, { recursive: true });
-        fs.mkdirSync(divideDir);
       }
+      fs.mkdirSync(divideDir);
 
       await new Promise((resolve, reject) => {
         ffmpeg(filePath)
