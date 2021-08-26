@@ -26,8 +26,20 @@ const [apiType, filePath] = program
     throw new Error(`File not found: ${filePath}`);
   }
 
+  let targetFilePath = filePath;
+  const { name, ext } = path.parse(filePath);
+  if (ext === ".webm") {
+    await new Promise((resolve, reject) => {
+      targetFilePath = `test_data/${name}.wav`;
+      ffmpeg(filePath)
+        // .outputOptions("-ab", "160k", "-ac", "1", "-ar", "48000")
+        .on("end", resolve)
+        .on("error", reject)
+        .save(targetFilePath);
+    });
+  }
+
   // TODO: use mp3 file
-  // const { name, ext } = path.parse(filePath);
   // let targetFilePath = filePath;
   // if (ext !== ".mp3") {
   //   targetFilePath = `test_data/${name}.mp3`;
@@ -35,7 +47,7 @@ const [apiType, filePath] = program
   //   ffmpeg(filePath).toFormat("mp3").save(targetFilePath);
   // }
 
-  const outputDir = `output/${path.basename(filePath)}`;
+  const outputDir = `output/${path.basename(targetFilePath)}`;
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir);
   }
@@ -43,27 +55,27 @@ const [apiType, filePath] = program
   switch (apiType) {
     case "all":
       await Promise.all([
-        getCloudSpeechToTextResult({ filePath, outputDir }),
-        getAmazonTranscribeResult({ filePath, outputDir }),
-        getCognitiveServicesSpeechResult({ filePath, outputDir }),
-        getAmivoiceResult({ filePath, outputDir }),
+        getCloudSpeechToTextResult({ filePath: targetFilePath, outputDir }),
+        getAmazonTranscribeResult({ filePath: targetFilePath, outputDir }),
+        getCognitiveServicesSpeechResult({ filePath: targetFilePath, outputDir }),
+        getAmivoiceResult({ filePath: targetFilePath, outputDir }),
       ]);
       break;
 
     case "gcp":
-      await getCloudSpeechToTextResult({ filePath, outputDir });
+      await getCloudSpeechToTextResult({ filePath: targetFilePath, outputDir });
       break;
 
     case "aws":
-      await getAmazonTranscribeResult({ filePath, outputDir });
+      await getAmazonTranscribeResult({ filePath: targetFilePath, outputDir });
       break;
 
     case "azure":
-      await getCognitiveServicesSpeechResult({ filePath, outputDir });
+      await getCognitiveServicesSpeechResult({ filePath: targetFilePath, outputDir });
       break;
 
     case "amivoice":
-      await getAmivoiceResult({ filePath, outputDir });
+      await getAmivoiceResult({ filePath: targetFilePath, outputDir });
       break;
 
     default:

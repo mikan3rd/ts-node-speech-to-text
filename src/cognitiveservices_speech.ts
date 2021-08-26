@@ -12,7 +12,9 @@ import util from "util";
 const { AZURE_SUBSCRIPTION_KEY, AZURE_LOCATION } = process.env;
 
 export const getCognitiveServicesSpeechResult = (args: { filePath: string; outputDir: string }) => {
+  const startTime = new Date();
   const { filePath, outputDir } = args;
+
   if (!AZURE_SUBSCRIPTION_KEY) {
     throw new Error("AZURE_SUBSCRIPTION_KEY is not set");
   }
@@ -47,7 +49,9 @@ export const getCognitiveServicesSpeechResult = (args: { filePath: string; outpu
     fs.writeFileSync(`${outputDir}/cognitiveservices_speech.json`, JSON.stringify(results, null, 2));
 
     const text = results.map((result) => result.DisplayText).join("\n");
-    console.log(`\n[Cognitive Service Speech]\n${text}`);
+    const endTime = new Date();
+    const timeDifference = (endTime.getTime() - startTime.getTime()) / 1000;
+    console.log(`\n[Cognitive Service Speech] ${timeDifference}s\n${text}`);
   };
 
   recognizer.startContinuousRecognitionAsync();

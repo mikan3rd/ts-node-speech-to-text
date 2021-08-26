@@ -7,7 +7,9 @@ import path from "path";
 const { AMIVOICE_APPKEY } = process.env;
 
 export const getAmivoiceResult = async (args: { filePath: string; outputDir: string }) => {
+  const startTime = new Date();
   const { filePath, outputDir } = args;
+
   if (!AMIVOICE_APPKEY) {
     throw new Error("AMIVOICE_APPKEY is not set");
   }
@@ -47,8 +49,9 @@ export const getAmivoiceResult = async (args: { filePath: string; outputDir: str
         ffmpeg(filePath)
           .output(`${divideDir}/%d.wav`)
           .outputOptions("-f", "segment", "-segment_time", segmentNum.toString())
-          .on("end", () => resolve(true))
-          .on("error", (err) => reject(err))
+          // .outputOptions("-ab", "160k", "-ac", "1", "-ar", "48000")
+          .on("end", resolve)
+          .on("error", reject)
           .run();
       });
 
@@ -62,18 +65,19 @@ export const getAmivoiceResult = async (args: { filePath: string; outputDir: str
 
   fs.writeFileSync(`${outputDir}/amivoice.json`, JSON.stringify(results, null, 2));
   const text = results.map((result) => result.text).join("\n");
-  console.log(`\n[Amivoice]\n${text}`);
+  const endTime = new Date();
+  const timeDifference = (endTime.getTime() - startTime.getTime()) / 1000;
+  console.log(`\n[Amivoice] ${timeDifference}s\n${text}`);
 };
 
 const requestAmivoice = async (filePath: string) => {
-  console.log(filePath);
   const url = "https://acp-api.amivoice.com/v1/recognize";
   const file = fs.createReadStream(filePath);
   const data = new FormData();
   data.append("a", file);
   const params = {
     u: AMIVOICE_APPKEY,
-    d: "grammarFileNames=-a-general",
+    d: "grammarFileNames=-a-general keepFillerToken=1",
   };
   const headers = { "content-type": "multipart/form-data" };
   return await axios.request({
