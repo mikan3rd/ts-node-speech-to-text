@@ -29,18 +29,19 @@ const [apiType, filePath] = program
   let targetFilePath = filePath;
   const { name, ext } = path.parse(filePath);
   if (ext === ".webm") {
-    await new Promise((resolve, reject) => {
-      targetFilePath = `test_data/${name}.wav`;
-      ffmpeg(filePath).on("end", resolve).on("error", reject).save(targetFilePath);
-    });
+    const tmpFilePath = `test_data/${name}.wav`;
+    await new Promise((resolve, reject) =>
+      ffmpeg(targetFilePath).on("end", resolve).on("error", reject).save(tmpFilePath),
+    );
+    targetFilePath = tmpFilePath;
   }
 
-  // TODO: use mp3 file
-  // let targetFilePath = filePath;
   // if (ext !== ".mp3") {
-  //   targetFilePath = `test_data/${name}.mp3`;
-  //   // TODO: Promise
-  //   ffmpeg(filePath).toFormat("mp3").save(targetFilePath);
+  //   const tmpFilePath = `test_data/${name}.mp3`;
+  //   await new Promise((resolve, reject) =>
+  //     ffmpeg(targetFilePath).toFormat("mp3").on("end", resolve).on("error", reject).save(tmpFilePath),
+  //   );
+  //   targetFilePath = tmpFilePath;
   // }
 
   const outputDir = `output/${path.basename(targetFilePath)}`;
