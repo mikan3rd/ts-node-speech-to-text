@@ -12,10 +12,13 @@ import axios from "axios";
 const { AWS_REGION, AWS_BUCKET_NAME } = process.env;
 
 export const getAmazonTranscribeResult = async (args: { filePath: string; outputDir: string }) => {
+  const startTime = new Date();
   const { filePath, outputDir } = args;
+
   if (!AWS_REGION) {
     throw new Error("AWS_REGION is not set");
   }
+
   const { bucketName, fileName } = await uploadFile(filePath);
   const jobName = await createTranscribeJob({ bucketName, fileName });
   if (jobName) {
@@ -23,7 +26,9 @@ export const getAmazonTranscribeResult = async (args: { filePath: string; output
     fs.writeFileSync(`${outputDir}/amazon_transcribe.json`, JSON.stringify(result, null, 2));
 
     const text = result.results.transcripts.map((t: { transcript: string }) => t.transcript).join("\n");
-    console.log(`\n[Amazon Transcribe]\n${text}`);
+    const endTime = new Date();
+    const timeDifference = (endTime.getTime() - startTime.getTime()) / 1000;
+    console.log(`\n[Amazon Transcribe] ${timeDifference}\n${text}`);
   }
 };
 
