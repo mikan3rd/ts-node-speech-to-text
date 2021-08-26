@@ -49,7 +49,6 @@ export const getAmivoiceResult = async (args: { filePath: string; outputDir: str
         ffmpeg(filePath)
           .output(`${divideDir}/%d.wav`)
           .outputOptions("-f", "segment", "-segment_time", segmentNum.toString())
-          // .outputOptions("-ab", "160k", "-ac", "1", "-ar", "48000")
           .on("end", resolve)
           .on("error", reject)
           .run();
@@ -79,12 +78,11 @@ const requestAmivoice = async (filePath: string) => {
     u: AMIVOICE_APPKEY,
     d: "grammarFileNames=-a-general keepFillerToken=1",
   };
-  const headers = { "content-type": "multipart/form-data" };
   return await axios.request({
     method: "POST",
     url,
     data,
-    headers,
+    headers: data.getHeaders(),
     params,
     maxBodyLength: Infinity,
   });

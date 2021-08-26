@@ -31,11 +31,7 @@ const [apiType, filePath] = program
   if (ext === ".webm") {
     await new Promise((resolve, reject) => {
       targetFilePath = `test_data/${name}.wav`;
-      ffmpeg(filePath)
-        // .outputOptions("-ab", "160k", "-ac", "1", "-ar", "48000")
-        .on("end", resolve)
-        .on("error", reject)
-        .save(targetFilePath);
+      ffmpeg(filePath).on("end", resolve).on("error", reject).save(targetFilePath);
     });
   }
 
