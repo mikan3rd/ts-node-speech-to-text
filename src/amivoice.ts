@@ -1,6 +1,8 @@
 import axios from "axios";
 import fs from "fs";
 import FormData from "form-data";
+import ffmpeg from "fluent-ffmpeg";
+import path from "path";
 
 const { AMIVOICE_APPKEY } = process.env;
 
@@ -10,14 +12,76 @@ export const getAmivoiceResult = async (args: { filePath: string; outputDir: str
     throw new Error("AMIVOICE_APPKEY is not set");
   }
 
+  const stats = fs.statSync(filePath);
+  const fileSizeInBytes = stats.size;
+  const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const results: any[] = [];
+  if (fileSizeInMegabytes < 16) {
+    const response = await requestAmivoice(filePath);
+    results.push(response.data);
+  } else {
+    console.log("File size is over 16MB!!");
+    const duration = await new Promise<number | undefined>((resolve, reject) => {
+      ffmpeg.ffprobe(filePath, (err, metadata) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(metadata.format.duration);
+      });
+    });
+
+    if (duration) {
+      const divideNum = Math.ceil(fileSizeInMegabytes / 16);
+      const segmentNum = Math.ceil(duration / divideNum);
+
+      const { name } = path.parse(filePath);
+      const divideDir = `test_data/${name}`;
+      if (!fs.existsSync(divideDir)) {
+        fs.mkdirSync(divideDir);
+      }
+
+      await new Promise((resolve, reject) => {
+        ffmpeg(filePath)
+          .output(`${divideDir}/%d.wav`)
+          .outputOptions("-f", "segment", "-segment_time", segmentNum.toString())
+          .on("end", () => resolve(true))
+          .on("error", (err) => reject(err))
+          .run();
+      });
+
+      const fileNames = fs.readdirSync(divideDir);
+      const responses = await Promise.all(fileNames.map((fileName) => requestAmivoice(`${divideDir}/${fileName}`)));
+      for (const response of responses) {
+        console.log(response.data);
+        results.push(response.data);
+      }
+    }
+  }
+
+  fs.writeFileSync(`${outputDir}/amivoice.json`, JSON.stringify(results, null, 2));
+  const text = results.map((result) => result.text).join("\n");
+  console.log(`\n[Amivoice]\n${text}`);
+};
+
+const requestAmivoice = async (filePath: string) => {
+  console.log(filePath);
   const url = "https://acp-api.amivoice.com/v1/recognize";
   const file = fs.createReadStream(filePath);
   const data = new FormData();
   data.append("a", file);
-  const params = { d: "-a-general", u: AMIVOICE_APPKEY };
+  const params = {
+    u: AMIVOICE_APPKEY,
+    d: "grammarFileNames=-a-general keepFillerToken=1",
+  };
   const headers = { "content-type": "multipart/form-data" };
-  const response = await axios.request({ method: "POST", url, data, headers, params });
-
-  fs.writeFileSync(`${outputDir}/amivoice.json`, JSON.stringify(response.data, null, 2));
-  console.log(`\n[Amivoice]\n${response.data.text}`);
+  return await axios.request({
+    method: "POST",
+    url,
+    data,
+    headers,
+    params,
+    maxBodyLength: Infinity,
+  });
 };

@@ -38,7 +38,6 @@ const getSpeechResult = async (args: { filePath?: string; gcsUri?: string }) => 
       uri: gcsUri,
     },
     config: {
-      encoding: "LINEAR16" as const,
       languageCode: "ja-JP",
       enableAutomaticPunctuation: true,
     },
