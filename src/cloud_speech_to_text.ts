@@ -44,6 +44,7 @@ const getSpeechResult = async (args: { filePath?: string; gcsUri?: string }) => 
     config: {
       languageCode: "ja-JP",
       enableAutomaticPunctuation: true,
+      enableWordTimeOffsets: true,
     },
   };
   const [operation] = await client.longRunningRecognize(request);
