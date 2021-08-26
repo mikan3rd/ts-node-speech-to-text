@@ -28,7 +28,7 @@ const [apiType, filePath] = program
 
   let targetFilePath = filePath;
   const { name, ext } = path.parse(filePath);
-  if (ext === ".webm") {
+  if (ext !== ".wav") {
     const tmpFilePath = `test_data/${name}.wav`;
     await new Promise((resolve, reject) =>
       ffmpeg(targetFilePath).on("end", resolve).on("error", reject).save(tmpFilePath),
