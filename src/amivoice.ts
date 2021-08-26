@@ -40,6 +40,9 @@ export const getAmivoiceResult = async (args: { filePath: string; outputDir: str
       const divideDir = `test_data/${name}`;
       if (!fs.existsSync(divideDir)) {
         fs.mkdirSync(divideDir);
+      } else {
+        fs.rmdirSync(divideDir, { recursive: true });
+        fs.mkdirSync(divideDir);
       }
 
       await new Promise((resolve, reject) => {
@@ -54,7 +57,6 @@ export const getAmivoiceResult = async (args: { filePath: string; outputDir: str
       const fileNames = fs.readdirSync(divideDir);
       const responses = await Promise.all(fileNames.map((fileName) => requestAmivoice(`${divideDir}/${fileName}`)));
       for (const response of responses) {
-        console.log(response.data);
         results.push(response.data);
       }
     }
@@ -73,7 +75,7 @@ const requestAmivoice = async (filePath: string) => {
   data.append("a", file);
   const params = {
     u: AMIVOICE_APPKEY,
-    d: "grammarFileNames=-a-general keepFillerToken=1",
+    d: "grammarFileNames=-a-general",
   };
   const headers = { "content-type": "multipart/form-data" };
   return await axios.request({
