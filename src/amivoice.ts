@@ -6,6 +6,28 @@ import path from "path";
 
 const { AMIVOICE_APPKEY } = process.env;
 
+export type AmivoiceResponse = {
+  utteranceid: string;
+  text: string;
+  code: string;
+  message: string;
+  results: {
+    confidence: number;
+    starttime: number;
+    endtime: number;
+    tags: [];
+    rulename: [];
+    text: string;
+    tokens: {
+      written: string;
+      confidence: number;
+      starttime: number;
+      endtime: number;
+      spoken: string;
+    }[];
+  }[];
+};
+
 export const getAmivoiceResult = async (args: { filePath: string; outputDir: string }) => {
   const startTime = new Date();
   const { filePath, outputDir } = args;
@@ -18,8 +40,7 @@ export const getAmivoiceResult = async (args: { filePath: string; outputDir: str
   const fileSizeInBytes = stats.size;
   const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const results: any[] = [];
+  const results: AmivoiceResponse[] = [];
   if (fileSizeInMegabytes < 16) {
     const response = await requestAmivoice(filePath);
     results.push(response.data);
@@ -78,7 +99,7 @@ const requestAmivoice = async (filePath: string) => {
     u: AMIVOICE_APPKEY,
     d: "grammarFileNames=-a-general keepFillerToken=1",
   };
-  return await axios.request({
+  return await axios.request<AmivoiceResponse>({
     method: "POST",
     url,
     data,
